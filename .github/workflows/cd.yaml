@@ -5,13 +5,37 @@ on:
     branches:
       - production
 
+env:
+  DOCKER_IMAGE_NAME: "slucasandrade98/flask-prod-app"
+
 jobs:
-  build-and-deploy:
+  build-push-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    
     - name: Checkout Code
       uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Get short SHA to commit to image repository
+      id: slug
+      run: echo "::set-output name=sha8::$(git rev-parse --short=8 HEAD)"
+
+    - name: Build Docker images
+      env:
+        DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
+      run: |
+        docker build -t ${DOCKER_IMAGE_NAME}:latest .
+        docker tag ${DOCKER_IMAGE_NAME}:latest ${DOCKER_IMAGE_NAME}:${{ steps.slug.outputs.sha8 }}
+    
+    - name: Push Docker images
+      run: |
+        docker push ${DOCKER_IMAGE_NAME}:latest
+        docker push ${DOCKER_IMAGE_NAME}:${{ steps.slug.outputs.sha8 }}
 
     - name: Set up kubectl
       uses: azure/setup-kubectl@v4
