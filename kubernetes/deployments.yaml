@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-prod-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-prod-app
+  template:
+    metadata:
+      labels:
+        app: flask-prod-app
+    spec:
+      containers:
+      - name: flask-prod-app
+        image: slucasandrade98/flask-prod-app:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "200m"
+            memory: "200Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5

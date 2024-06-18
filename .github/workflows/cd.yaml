@@ -1,0 +1,25 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+    
+    - name: Deploy to Kubernetes
+      run: |
+        echo "Kubeconfig context update/config"
+        echo "kubectl apply -f kubernetes/"
+
+    - name: Check deployment status
+      run: echo "kubectl rollout status deployment/flask-prod-app-deployment"
